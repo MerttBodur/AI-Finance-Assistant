@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "blockchain-expert": {
+      "source": "personamanagmentlayer/pcl",
+      "sourceType": "github",
+      "computedHash": "8736374740441e4219178876f1430d937831a01d1a83acd9dbe1af3503006efc"
+    }
+  }
+}

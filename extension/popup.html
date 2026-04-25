@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoVault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #0B0E11;
+      --bg2:          #1E2026;
+      --bg3:          #2B3139;
+      --yellow:       #F0B90B;
+      --yellow-dim:   rgba(240, 185, 11, 0.10);
+      --yellow-glow:  rgba(240, 185, 11, 0.28);
+      --green:        #0ECB81;
+      --green-dim:    rgba(14, 203, 129, 0.10);
+      --red:          #F6465D;
+      --text:         #EAECEF;
+      --text2:        #848E9C;
+      --text3:        #474D57;
+      --border:       rgba(234, 236, 239, 0.07);
+      --border-lit:   rgba(240, 185, 11, 0.22);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 390px;
+      height: 568px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Sora', sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(240,185,11,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240,185,11,0.025) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .popup {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    /* ─── HEADER ─── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px 13px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(11,14,17,0.97);
+      flex-shrink: 0;
+    }
+
+    .brand { display: flex; align-items: center; gap: 9px; }
+
+    .logo-mark {
+      width: 26px;
+      height: 26px;
+      background: var(--yellow);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 11px;
+      color: var(--bg);
+      flex-shrink: 0;
+    }
+
+    .brand-name { font-size: 13px; font-weight: 700; color: var(--text); }
+    .brand-name em { color: var(--yellow); font-style: normal; }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--green-dim);
+      border: 1px solid rgba(14,203,129,0.18);
+      border-radius: 20px;
+      padding: 3px 9px 3px 7px;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 0.07em;
+    }
+
+    .live-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.35; }
+    }
+
+    /* ─── PAGES ─── */
+    .pages { flex: 1; position: relative; overflow: hidden; }
+
+    .page {
+      position: absolute;
+      inset: 0;
+      padding: 18px 18px 10px;
+      overflow-y: auto;
+      opacity: 0;
+      transform: translateX(16px);
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+
+    .page.active { opacity: 1; transform: translateX(0); pointer-events: all; }
+    .page::-webkit-scrollbar { width: 2px; }
+    .page::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 2px; }
+
+    /* ─── PAGE 1: DISPLAY ─── */
+
+    .month-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .month-label {
+      font-size: 10.5px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text2);
+    }
+
+    .month-nav { display: flex; gap: 4px; }
+
+    .mnav-btn {
+      width: 20px; height: 20px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text2); font-size: 11px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .mnav-btn:hover { border-color: var(--yellow); color: var(--yellow); }
+
+    .pnl-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 18px 16px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pnl-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--green) 0%, transparent 70%);
+    }
+
+    .pnl-card-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text3); margin-bottom: 10px;
+    }
+
+    .pnl-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 34px; font-weight: 700;
+      color: var(--green);
+      letter-spacing: -0.03em;
+      line-height: 1; margin-bottom: 8px;
+    }
+
+    .pnl-meta { display: flex; align-items: center; gap: 10px; }
+
+    .pnl-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; font-weight: 600;
+      color: var(--green);
+      background: var(--green-dim);
+      border-radius: 4px; padding: 2px 8px;
+    }
+
+    .pnl-context { font-size: 10.5px; color: var(--text3); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px; margin-bottom: 14px;
+    }
+
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 14px;
+      transition: border-color 0.2s;
+    }
+
+    .stat-card:hover { border-color: var(--border-lit); }
+
+    .stat-lbl {
+      font-size: 9.5px; font-weight: 600;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--text3); margin-bottom: 6px;
+    }
+
+    .stat-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px; font-weight: 600; color: var(--text);
+    }
+
+    .stat-val.green { color: var(--green); }
+    .stat-val.yellow { color: var(--yellow); }
+
+    .section-title {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text3); margin-bottom: 10px;
+    }
+
+    .activity-list { display: flex; flex-direction: column; }
+
+    .act-item {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .act-item:last-child { border-bottom: none; }
+    .act-left { display: flex; align-items: center; gap: 10px; }
+
+    .act-icon {
+      width: 28px; height: 28px;
+      background: var(--yellow-dim);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; flex-shrink: 0;
+    }
+
+    .act-name { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+    .act-time { font-size: 10px; color: var(--text3); }
+
+    .act-amt {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px; font-weight: 600; color: var(--green);
+    }
+
+    /* ─── PAGE 2: PREFERENCES ─── */
+
+    .pref-block { margin-bottom: 20px; }
+
+    .pref-block-title {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text3); margin-bottom: 11px;
+    }
+
+    .risk-row { display: flex; gap: 8px; }
+    .risk-opt { flex: 1; position: relative; }
+    .risk-opt input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+    .risk-lbl {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 7px;
+      padding: 15px 10px;
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: 10px; cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .risk-lbl:hover { border-color: var(--border-lit); }
+    .risk-opt input:checked + .risk-lbl { border-color: var(--yellow); background: var(--yellow-dim); }
+
+    .risk-pill {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 2px 8px; border-radius: 20px;
+    }
+
+    .risk-pill.low { background: var(--green-dim); color: var(--green); }
+    .risk-pill.med { background: var(--yellow-dim); color: var(--yellow); }
+
+    .risk-title { font-size: 13px; font-weight: 700; }
+    .risk-title.green { color: var(--green); }
+    .risk-title.yellow { color: var(--yellow); }
+
+    .risk-sub { font-size: 9.5px; color: var(--text3); text-align: center; line-height: 1.5; }
+
+    .sep { height: 1px; background: var(--border); margin: 0 0 18px; }
+
+    .input-group { margin-bottom: 11px; }
+
+    .input-top {
+      display: flex; justify-content: space-between;
+      align-items: baseline; margin-bottom: 6px;
+    }
+
+    .input-lbl { font-size: 11px; font-weight: 500; color: var(--text2); }
+    .input-hint { font-size: 9.5px; color: var(--text3); }
+
+    .input-wrap { position: relative; }
+
+    .input-field {
+      width: 100%;
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 52px 10px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px; font-weight: 500;
+      color: var(--text); outline: none;
+      transition: border-color 0.2s;
+      -moz-appearance: textfield;
+    }
+
+    .input-field::-webkit-inner-spin-button,
+    .input-field::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .input-field:focus { border-color: var(--yellow); }
+
+    .input-unit {
+      position: absolute; right: 13px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 10.5px; font-weight: 700;
+      color: var(--text3); letter-spacing: 0.05em;
+      pointer-events: none;
+    }
+
+    .save-btn {
+      width: 100%; padding: 12px;
+      background: var(--yellow); color: var(--bg);
+      border: none; border-radius: 8px;
+      font-family: 'Sora', sans-serif;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 0.04em; cursor: pointer;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.2s;
+      margin-top: 6px;
+    }
+
+    .save-btn:hover {
+      background: #d9a60a;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(240,185,11,0.28);
+    }
+
+    .save-btn:active { transform: translateY(0); box-shadow: none; }
+
+    /* ─── PAGE 3: AUTO-TRADE ─── */
+
+    .status-strip { display: flex; gap: 7px; margin-bottom: 22px; }
+
+    .status-chip {
+      flex: 1; background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 9px; padding: 11px 8px; text-align: center;
+    }
+
+    .chip-label {
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--text3); margin-bottom: 6px;
+    }
+
+    .chip-val {
+      font-size: 10.5px; font-weight: 600;
+      display: flex; align-items: center;
+      justify-content: center; gap: 5px;
+    }
+
+    .chip-val.up { color: var(--green); }
+    .chip-val.warn { color: var(--yellow); }
+
+    .chip-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .chip-dot.pulse { animation: blink 2s ease-in-out infinite; }
+
+    .toggle-wrap {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .power-btn {
+      width: 114px; height: 114px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--bg2);
+      cursor: pointer;
+      position: relative;
+      display: flex; align-items: center;
+      justify-content: center; flex-direction: column; gap: 5px;
+      transition: border-color 0.35s, box-shadow 0.35s, background 0.35s;
+      outline: none;
+    }
+
+    .power-btn::before {
+      content: '';
+      position: absolute; inset: 6px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      transition: border-color 0.35s;
+    }
+
+    .power-btn.on {
+      border-color: var(--yellow);
+      background: var(--yellow-dim);
+      box-shadow:
+        0 0 0 4px rgba(240,185,11,0.08),
+        0 0 32px rgba(240,185,11,0.22),
+        0 0 64px rgba(240,185,11,0.08);
+    }
+
+    .power-btn.on::before { border-color: rgba(240,185,11,0.3); }
+
+    .power-icon { font-size: 26px; line-height: 1; transition: filter 0.3s; }
+    .power-btn.on .power-icon { filter: drop-shadow(0 0 8px rgba(240,185,11,0.6)); }
+
+    .power-label {
+      font-size: 10.5px; font-weight: 700;
+      letter-spacing: 0.12em; color: var(--text3);
+      transition: color 0.3s;
+    }
+
+    .power-btn.on .power-label { color: var(--yellow); }
+
+    .toggle-hint { font-size: 10.5px; color: var(--text3); text-align: center; line-height: 1.6; }
+
+    .info-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 13px 15px; margin-bottom: 9px;
+    }
+
+    .info-row { display: flex; align-items: center; justify-content: space-between; }
+
+    .info-key {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3);
+    }
+
+    .info-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px; font-weight: 600; color: var(--yellow);
+    }
+
+    .rec-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 13px 15px;
+    }
+
+    .rec-top {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 10px;
+    }
+
+    .rec-key {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.09em; text-transform: uppercase; color: var(--text3);
+    }
+
+    .rec-model {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+      background: var(--yellow-dim); color: var(--yellow);
+      padding: 2px 8px; border-radius: 20px;
+    }
+
+    .rec-body {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--text2); line-height: 1.8;
+    }
+
+    .rec-body b { color: var(--yellow); font-weight: 600; }
+
+    /* ─── BOTTOM NAV ─── */
+    .bottom-nav {
+      display: flex;
+      border-top: 1px solid var(--border);
+      background: rgba(11,14,17,0.98);
+      flex-shrink: 0;
+    }
+
+    .nav-btn {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 4px;
+      padding: 11px 6px;
+      cursor: pointer; border: none; background: none;
+      color: var(--text3); position: relative;
+      transition: color 0.18s;
+    }
+
+    .nav-btn.active { color: var(--yellow); }
+
+    .nav-btn.active::after {
+      content: '';
+      position: absolute; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 28px; height: 2px;
+      background: var(--yellow);
+      border-radius: 0 0 2px 2px;
+    }
+
+    .nav-icon { font-size: 15px; line-height: 1; }
+
+    .nav-text {
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .page.active > * { animation: slideUp 0.28s ease backwards; }
+    .page.active > *:nth-child(1) { animation-delay: 0.04s; }
+    .page.active > *:nth-child(2) { animation-delay: 0.09s; }
+    .page.active > *:nth-child(3) { animation-delay: 0.14s; }
+    .page.active > *:nth-child(4) { animation-delay: 0.19s; }
+    .page.active > *:nth-child(5) { animation-delay: 0.24s; }
+    .page.active > *:nth-child(6) { animation-delay: 0.29s; }
+
+    /* ─── TOAST ─── */
+    .toast {
+      position: fixed; bottom: 62px; left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: var(--bg3); border: 1px solid var(--yellow);
+      border-radius: 8px; padding: 7px 16px;
+      font-size: 11.5px; font-weight: 600; color: var(--yellow);
+      opacity: 0; pointer-events: none; white-space: nowrap;
+      transition: opacity 0.25s, transform 0.25s; z-index: 200;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+<div class="popup">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <div class="logo-mark">AV</div>
+      <span class="brand-name">Auto<em>Vault</em></span>
+    </div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      LIVE
+    </div>
+  </header>
+
+  <!-- PAGES -->
+  <div class="pages">
+
+    <!-- PAGE 1: DISPLAY -->
+    <div class="page active" id="page-display">
+      <div class="month-row">
+        <span class="month-label">April 2026</span>
+        <div class="month-nav">
+          <button class="mnav-btn">&#8249;</button>
+          <button class="mnav-btn">&#8250;</button>
+        </div>
+      </div>
+
+      <div class="pnl-card">
+        <div class="pnl-card-label">Monthly Return</div>
+        <div class="pnl-value" id="pnl-num">+$0.00</div>
+        <div class="pnl-meta">
+          <span class="pnl-badge">+12.4%</span>
+          <span class="pnl-context">vs previous month</span>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-lbl">Total Invested</div>
+          <div class="stat-val yellow">$2,000</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">AI Trades</div>
+          <div class="stat-val">7</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Avg Return</div>
+          <div class="stat-val green">3.1%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Reserve</div>
+          <div class="stat-val">$200</div>
+        </div>
+      </div>
+
+      <div class="section-title">Recent Activity</div>
+      <div class="activity-list">
+        <div class="act-item">
+          <div class="act-left">
+            <div class="act-icon">⚡</div>
+            <div>
+              <div class="act-name">USDC → Aave</div>
+              <div class="act-time">Apr 25 · 14:02 UTC</div>
+            </div>
+          </div>
+          <span class="act-amt">+$50.00</span>
+        </div>
+        <div class="act-item">
+          <div class="act-left">
+            <div class="act-icon">⚡</div>
+            <div>
+              <div class="act-name">USDC → Aave</div>
+              <div class="act-time">Apr 18 · 09:15 UTC</div>
+            </div>
+          </div>
+          <span class="act-amt">+$50.00</span>
+        </div>
+        <div class="act-item">
+          <div class="act-left">
+            <div class="act-icon">⚡</div>
+            <div>
+              <div class="act-name">USDC → Aave</div>
+              <div class="act-time">Apr 11 · 11:33 UTC</div>
+            </div>
+          </div>
+          <span class="act-amt">+$50.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 2: PREFERENCES -->
+    <div class="page" id="page-prefs">
+      <div class="pref-block">
+        <div class="pref-block-title">Risk Level</div>
+        <div class="risk-row">
+          <div class="risk-opt">
+            <input type="radio" name="risk" id="r-low" value="low" checked>
+            <label class="risk-lbl" for="r-low">
+              <span class="risk-pill low">LOW</span>
+              <span class="risk-title green">Safe</span>
+              <span class="risk-sub">USDC only<br>Aave yield</span>
+            </label>
+          </div>
+          <div class="risk-opt">
+            <input type="radio" name="risk" id="r-med" value="medium">
+            <label class="risk-lbl" for="r-med">
+              <span class="risk-pill med">MED</span>
+              <span class="risk-title yellow">Balanced</span>
+              <span class="risk-sub">80% USDC<br>20% ETH sim</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="pref-block">
+        <div class="pref-block-title">Investment Limits</div>
+
+        <div class="input-group">
+          <div class="input-top">
+            <span class="input-lbl">Max Single Trade</span>
+            <span class="input-hint">per AI decision</span>
+          </div>
+          <div class="input-wrap">
+            <input class="input-field" type="number" value="50" min="1" max="9999">
+            <span class="input-unit">USDC</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <div class="input-top">
+            <span class="input-lbl">Monthly Limit</span>
+            <span class="input-hint">total cap</span>
+          </div>
+          <div class="input-wrap">
+            <input class="input-field" type="number" value="200" min="1" max="99999">
+            <span class="input-unit">USDC</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <div class="input-top">
+            <span class="input-lbl">Min Reserve</span>
+            <span class="input-hint">always keep</span>
+          </div>
+          <div class="input-wrap">
+            <input class="input-field" type="number" value="100" min="0" max="9999">
+            <span class="input-unit">USDC</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="save-btn" onclick="showToast('Preferences saved to vault ✓')">
+        Save to Vault
+      </button>
+    </div>
+
+    <!-- PAGE 3: AUTO-TRADE -->
+    <div class="page" id="page-auto">
+      <div class="status-strip">
+        <div class="status-chip">
+          <div class="chip-label">AI Engine</div>
+          <div class="chip-val up"><span class="chip-dot pulse"></span>Connected</div>
+        </div>
+        <div class="status-chip">
+          <div class="chip-label">Executor</div>
+          <div class="chip-val up"><span class="chip-dot pulse"></span>Ready</div>
+        </div>
+        <div class="status-chip">
+          <div class="chip-label">Network</div>
+          <div class="chip-val warn"><span class="chip-dot"></span>Sepolia</div>
+        </div>
+      </div>
+
+      <div class="toggle-wrap">
+        <button class="power-btn" id="power-btn" onclick="toggleAuto()" aria-label="Toggle auto-trade">
+          <span class="power-icon">⏻</span>
+          <span class="power-label" id="power-label">DISABLED</span>
+        </button>
+        <div class="toggle-hint" id="toggle-hint">Tap to enable automatic trading</div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-row">
+          <span class="info-key">Next AI Run</span>
+          <span class="info-val" id="countdown">--:--</span>
+        </div>
+      </div>
+
+      <div class="rec-card">
+        <div class="rec-top">
+          <span class="rec-key">Last AI Recommendation</span>
+          <span class="rec-model">GPT-4o-mini</span>
+        </div>
+        <div class="rec-body">
+          action: <b>"invest"</b><br>
+          amount: <b>50 USDC</b><br>
+          protocol: <b>aave</b><br>
+          reason: <b>"low volatility window"</b>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /pages -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="goTo('display', this)">
+      <span class="nav-icon">📊</span>
+      <span class="nav-text">Display</span>
+    </button>
+    <button class="nav-btn" onclick="goTo('prefs', this)">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-text">Prefs</span>
+    </button>
+    <button class="nav-btn" onclick="goTo('auto', this)">
+      <span class="nav-icon">🤖</span>
+      <span class="nav-text">AutoTrade</span>
+    </button>
+  </nav>
+
+</div><!-- /popup -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Navigation
+  function goTo(page, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // PnL counter animation on load
+  (function() {
+    const el = document.getElementById('pnl-num');
+    const target = 247.83;
+    const duration = 1300;
+    let start = null;
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    function step(ts) {
+      if (!start) start = ts;
+      const prog = Math.min((ts - start) / duration, 1);
+      el.textContent = '+$' + (ease(prog) * target).toFixed(2);
+      if (prog < 1) requestAnimationFrame(step);
+    }
+    setTimeout(() => requestAnimationFrame(step), 350);
+  })();
+
+  // Auto-trade toggle
+  let autoOn = false;
+  let timerInterval = null;
+  let seconds = 120;
+
+  function toggleAuto() {
+    autoOn = !autoOn;
+    const btn   = document.getElementById('power-btn');
+    const label = document.getElementById('power-label');
+    const hint  = document.getElementById('toggle-hint');
+    const cd    = document.getElementById('countdown');
+
+    if (autoOn) {
+      btn.classList.add('on');
+      label.textContent = 'ENABLED';
+      hint.textContent  = 'AI is monitoring & executing trades';
+      seconds = 120;
+      updateCd();
+      timerInterval = setInterval(() => {
+        seconds = seconds > 0 ? seconds - 1 : 120;
+        updateCd();
+      }, 1000);
+    } else {
+      btn.classList.remove('on');
+      label.textContent = 'DISABLED';
+      hint.textContent  = 'Tap to enable automatic trading';
+      cd.textContent    = '--:--';
+      clearInterval(timerInterval);
+    }
+  }
+
+  function updateCd() {
+    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    document.getElementById('countdown').textContent = m + ':' + s;
+  }
+
+  // Toast notification
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+</script>
+</body>
+</html>
