@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "start": "tsx src/executor.ts",
+    "dev": "tsx watch src/executor.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
