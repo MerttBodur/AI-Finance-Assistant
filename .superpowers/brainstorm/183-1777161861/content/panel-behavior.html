@@ -1,0 +1,108 @@
+<h2>Risk panel nasıl açılsın?</h2>
+<p class="subtitle">Risk seçildiğinde asset dağılımı paneli nasıl davransın?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="accordion" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0B0E11;padding:16px;border-radius:8px;font-family:monospace">
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <div style="flex:1;background:#1a3a28;border:1px solid #0ECB81;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:8px;color:#0ECB81;font-weight:700">LOW</div>
+          <div style="font-size:11px;color:#0ECB81;font-weight:700">Safe</div>
+        </div>
+        <div style="flex:1;background:#1E2026;border:1px solid #333;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:8px;color:#F0B90B;font-weight:700">MED</div>
+          <div style="font-size:11px;color:#F0B90B;font-weight:700">Balanced</div>
+        </div>
+        <div style="flex:1;background:#1E2026;border:1px solid #333;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:8px;color:#F6465D;font-weight:700">HIGH</div>
+          <div style="font-size:11px;color:#F6465D;font-weight:700">Degen</div>
+        </div>
+      </div>
+      <div style="background:#111;border:1px solid #0ECB81;border-radius:8px;padding:10px">
+        <div style="font-size:9px;color:#474D57;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">LOW — Asset Allocation</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:56px;height:56px;border-radius:50%;background:conic-gradient(#0ECB81 0% 50%,#26A17B 50% 75%,#5a9e8f 75% 87.5%,#3a7a70 87.5% 100%);flex-shrink:0"></div>
+          <div style="font-size:9px;color:#848E9C;line-height:1.9">
+            <span style="color:#0ECB81">●</span> USDC 50%<br>
+            <span style="color:#26A17B">●</span> USDT 25%<br>
+            <span style="color:#5a9e8f">●</span> XAO 12.5%<br>
+            <span style="color:#3a7a70">●</span> PAXG 12.5%
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Accordion (aşağı kayar)</h3>
+      <p>Seçilen risk kartının altında panel kayarak açılır. Diğer kartlar sıkışmaz. En sade UX — tüm içerik tek akışta.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="always-visible" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0B0E11;padding:16px;border-radius:8px;font-family:monospace">
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <div style="flex:1;background:#1a3a28;border:1px solid #0ECB81;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:8px;color:#0ECB81;font-weight:700">LOW</div>
+        </div>
+        <div style="flex:1;background:#1E2026;border:1px solid #333;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:8px;color:#F0B90B;font-weight:700">MED</div>
+        </div>
+        <div style="flex:1;background:#1E2026;border:1px solid #333;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:8px;color:#F6465D;font-weight:700">HIGH</div>
+        </div>
+      </div>
+      <div style="background:#111;border:1px solid #222;border-radius:8px;padding:10px">
+        <div style="display:flex;gap:8px;margin-bottom:8px;border-bottom:1px solid #222;padding-bottom:6px">
+          <div style="font-size:8px;color:#0ECB81;font-weight:700;border-bottom:1.5px solid #0ECB81;padding-bottom:2px">LOW</div>
+          <div style="font-size:8px;color:#474D57;font-weight:600">MED</div>
+          <div style="font-size:8px;color:#474D57;font-weight:600">HIGH</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:50px;height:50px;border-radius:50%;background:conic-gradient(#0ECB81 0% 50%,#26A17B 50% 75%,#5a9e8f 75% 100%);flex-shrink:0"></div>
+          <div style="font-size:8.5px;color:#848E9C;line-height:1.9">
+            <span style="color:#0ECB81">●</span> USDC 50%<br>
+            <span style="color:#26A17B">●</span> USDT 25%<br>
+            <span style="color:#5a9e8f">●</span> XAO 25%
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Her zaman görünür (tab)</h3>
+      <p>Panel her zaman açık. Risk seçimi panelin sekmeleri gibi çalışır. İçerik geçiş animasyonuyla değişir. Sabit yükseklik.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="slide-up" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0B0E11;padding:16px;border-radius:8px;font-family:monospace;position:relative;overflow:hidden;min-height:120px">
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <div style="flex:1;background:#1a3a28;border:1px solid #0ECB81;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:8px;color:#0ECB81;font-weight:700">LOW</div>
+        </div>
+        <div style="flex:1;background:#1E2026;border:1px solid #333;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:8px;color:#F0B90B;font-weight:700">MED</div>
+        </div>
+        <div style="flex:1;background:#1E2026;border:1px solid #333;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:8px;color:#F6465D;font-weight:700">HIGH</div>
+        </div>
+      </div>
+      <div style="font-size:9px;color:#474D57;text-align:center;margin:4px 0">▼ detayları gör</div>
+      <div style="position:absolute;bottom:0;left:0;right:0;background:#161a20;border-top:1px solid #0ECB81;padding:10px;border-radius:0 0 8px 8px">
+        <div style="font-size:9px;color:#0ECB81;text-align:center;margin-bottom:6px;font-weight:700">LOW — Asset Allocation</div>
+        <div style="display:flex;align-items:center;gap:10px;justify-content:center">
+          <div style="width:44px;height:44px;border-radius:50%;background:conic-gradient(#0ECB81 0% 50%,#26A17B 50% 75%,#5a9e8f 75% 100%);flex-shrink:0"></div>
+          <div style="font-size:8px;color:#848E9C;line-height:1.9">
+            <span style="color:#0ECB81">●</span> USDC 50%<br>
+            <span style="color:#26A17B">●</span> USDT 25%<br>
+            <span style="color:#5a9e8f">●</span> XAO 25%
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Slide-up sheet</h3>
+      <p>Risk seçince link çıkar, tıklayınca aşağıdan overlay kayar. Mobile-style. En fazla etkileşim gerektirir.</p>
+    </div>
+  </div>
+
+</div>

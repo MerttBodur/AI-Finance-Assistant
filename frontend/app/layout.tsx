@@ -1,13 +1,9 @@
-"use client";
-
-import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
-import "@rainbow-me/rainbowkit/styles.css";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider } from "wagmi";
-import { wagmiConfig } from "@/lib/wagmi";
+import { Providers } from "./providers";
+import { Sora, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const queryClient = new QueryClient();
+const sora = Sora({ subsets: ["latin"], variable: "--font-sora" });
+const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export default function RootLayout({
   children,
@@ -15,13 +11,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
-        <WagmiProvider config={wagmiConfig}>
-          <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider>{children}</RainbowKitProvider>
-          </QueryClientProvider>
-        </WagmiProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${sora.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
