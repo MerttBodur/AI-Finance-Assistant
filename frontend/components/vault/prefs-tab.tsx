@@ -7,6 +7,7 @@ import { useVaultPolicy } from "@/hooks/use-vault-policy";
 import { fmt } from "@/lib/utils";
 import type { VaultPolicy, RiskLevel } from "@/types";
 import { ALLOCATIONS, type AssetSlice } from "@/lib/allocations";
+import { DEMO_MODE, setDemoRiskLevel } from "@/lib/demo-data";
 
 const RISK_OPTS = [
   { value: 0 as RiskLevel, pill: "LOW",  pillColor: "#0ECB81", pillBg: "var(--green-dim)",  title: "Safe",     titleColor: "#0ECB81" },
@@ -145,7 +146,7 @@ export function PrefsTab() {
           {RISK_OPTS.map((opt) => (
             <div
               key={opt.value}
-              onClick={() => setRisk(opt.value)}
+              onClick={() => { setRisk(opt.value); if (DEMO_MODE) setDemoRiskLevel(opt.value); }}
               style={{
                 flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "7px",
                 padding: "15px 10px",

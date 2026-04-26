@@ -51,9 +51,9 @@ export default function DashboardPage() {
             </div>
           ) : (
             <>
-              {tab === "display" && <DisplayTab />}
-              {tab === "prefs"   && <PrefsTab />}
-              {tab === "auto"    && <AutoTradeTab />}
+              <div style={{ display: tab === "display" ? "block" : "none" }}><DisplayTab /></div>
+              <div style={{ display: tab === "prefs"   ? "block" : "none" }}><PrefsTab /></div>
+              <div style={{ display: tab === "auto"    ? "block" : "none" }}><AutoTradeTab /></div>
             </>
           )}
         </div>
