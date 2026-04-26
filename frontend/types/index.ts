@@ -1,6 +1,6 @@
 import type { Address } from "viem";
 
-export type RiskLevel = 0 | 1;
+export type RiskLevel = 0 | 1 | 2;
 
 export type VaultPolicy = {
   maxSingleInvestment: bigint;
