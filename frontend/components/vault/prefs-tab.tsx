@@ -69,10 +69,16 @@ function DonutChart({ slices, label, labelColor }: { slices: AssetSlice[]; label
 const RISK_LABEL: Record<RiskLevel, string> = { 0: "LOW", 1: "MED", 2: "HIGH" };
 const RISK_BORDER: Record<RiskLevel, string> = { 0: "#0ECB81", 1: "#F0B90B", 2: "#F6465D" };
 
+function normalizeRiskLevel(value: unknown): RiskLevel {
+  const riskValue = typeof value === "bigint" ? Number(value) : value;
+  return riskValue === 0 || riskValue === 1 || riskValue === 2 ? riskValue : 0;
+}
+
 function AllocationPanel({ risk }: { risk: RiskLevel }) {
-  const slices = ALLOCATIONS[risk];
-  const label = RISK_LABEL[risk];
-  const borderColor = RISK_BORDER[risk];
+  const safeRisk = normalizeRiskLevel(risk);
+  const slices = ALLOCATIONS[safeRisk];
+  const label = RISK_LABEL[safeRisk];
+  const borderColor = RISK_BORDER[safeRisk];
 
   return (
     <div style={{ maxHeight: "220px", overflow: "hidden", transition: "max-height 0.3s ease", marginTop: "10px" }}>
@@ -127,7 +133,7 @@ export function PrefsTab() {
     setMaxSingle(fmt(pol.maxSingleInvestment));
     setMonthly(fmt(pol.monthlyLimit));
     setReserve(fmt(pol.minReserve));
-    setRisk(pol.riskLevel);
+    setRisk(normalizeRiskLevel(pol.riskLevel));
     setAutoOn(pol.autoInvestEnabled);
   }, [pol]);
 
