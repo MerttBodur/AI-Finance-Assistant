@@ -6,32 +6,13 @@ import { useSetPolicy } from "@/hooks/use-set-policy";
 import { useVaultPolicy } from "@/hooks/use-vault-policy";
 import { fmt } from "@/lib/utils";
 import type { VaultPolicy, RiskLevel } from "@/types";
+import { ALLOCATIONS, type AssetSlice } from "@/lib/allocations";
 
 const RISK_OPTS = [
   { value: 0 as RiskLevel, pill: "LOW",  pillColor: "#0ECB81", pillBg: "var(--green-dim)",  title: "Safe",     titleColor: "#0ECB81" },
   { value: 1 as RiskLevel, pill: "MED",  pillColor: "#F0B90B", pillBg: "var(--yellow-dim)", title: "Balanced", titleColor: "#F0B90B" },
   { value: 2 as RiskLevel, pill: "HIGH", pillColor: "#F05A28", pillBg: "var(--red-dim)",    title: "Degen",    titleColor: "#F05A28" },
 ] as const;
-
-type AssetSlice = { label: string; pct: number; color: string };
-
-const ALLOCATIONS: Record<RiskLevel, AssetSlice[]> = {
-  0: [
-    { label: "USDC", pct: 50, color: "#0ECB81" },
-    { label: "XAUT", pct: 30, color: "#22C55E" },
-    { label: "XAGX", pct: 20, color: "#86EFAC" },
-  ],
-  1: [
-    { label: "XAUT", pct: 40, color: "#F0B90B" },
-    { label: "BTC",  pct: 35, color: "#F59E0B" },
-    { label: "ETH",  pct: 25, color: "#FDE047" },
-  ],
-  2: [
-    { label: "BTC", pct: 45, color: "#F97316" },
-    { label: "ETH", pct: 35, color: "#EA580C" },
-    { label: "SOL", pct: 20, color: "#B91C1C" },
-  ],
-};
 
 const CIRCUMFERENCE = 2 * Math.PI * 38;
 
