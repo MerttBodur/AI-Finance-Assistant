@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useVaultPolicy } from "@/hooks/use-vault-policy";
 import { useSetPolicy } from "@/hooks/use-set-policy";
 import { useEmergencyStop } from "@/hooks/use-emergency-stop";
+import { useAccount } from "wagmi";
 import type { VaultPolicy } from "@/types";
 
 // Seconds until next backend cron tick — executor runs "*/2 * * * *"
@@ -28,80 +29,92 @@ function useNextRunCountdown(active: boolean) {
   return `${m}:${s}`;
 }
 
-const STATUS_CHIPS = [
-  { label: "AI Engine", val: "Connected", color: "#0ECB81", pulse: true  },
-  { label: "Executor",  val: "Ready",     color: "#0ECB81", pulse: true  },
-  { label: "Network",   val: "Sepolia",   color: "#F0B90B", pulse: false },
-] as const;
-
 export function AutoTradeTab() {
   const { data: policyRaw, isLoading } = useVaultPolicy();
   const { setPolicy, isPending: setPending, isConfirming: setConfirming } = useSetPolicy();
   const { pause, unpause, isPending: pausePending, isConfirming: pauseConfirming } = useEmergencyStop();
 
+  const { isConnected } = useAccount();
   const pol = policyRaw as VaultPolicy | undefined;
   const autoOn  = pol?.autoInvestEnabled ?? false;
   const isBusy      = setPending   || setConfirming;
   const isPauseBusy = pausePending || pauseConfirming;
   const countdown = useNextRunCountdown(autoOn);
 
+  const [cooldownEnd, setCooldownEnd] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem("autoTradeCooldownEnd");
+    if (stored) {
+      const parsed = Number(stored);
+      if (!Number.isNaN(parsed)) {
+        setCooldownEnd(parsed);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const cooldownRemaining = cooldownEnd ? Math.max(cooldownEnd - now, 0) : 0;
+  const cooldownActive = cooldownRemaining > 0;
+  const cooldownLabel = cooldownActive
+    ? `${Math.floor(cooldownRemaining / 86400000)}g ${String(Math.floor((cooldownRemaining % 86400000) / 3600000)).padStart(2, "0")}s ${String(Math.floor((cooldownRemaining % 3600000) / 60000)).padStart(2, "0")}d`
+    : null;
+
+  const canToggle = isConnected && !isBusy && !isLoading && (!cooldownActive || autoOn);
+
   const toggleAutoInvest = () => {
-    if (!pol || isBusy || isLoading) return;
+    if (!isConnected || !canToggle) return;
+
+    const basePolicy: VaultPolicy = {
+      maxSingleInvestment: 0n,
+      monthlyLimit: 0n,
+      minReserve: 0n,
+      autoInvestEnabled: false,
+      riskLevel: 0,
+    };
+    const nextPolicy = pol ?? basePolicy;
+
+    if (!autoOn) {
+      const nextAllowed = Date.now() + 30 * 24 * 60 * 60 * 1000;
+      window.localStorage.setItem("autoTradeCooldownEnd", String(nextAllowed));
+      setCooldownEnd(nextAllowed);
+    }
+
     // Spread full policy — only flip autoInvestEnabled to preserve limits
-    setPolicy({ ...pol, autoInvestEnabled: !autoOn });
+    setPolicy({ ...nextPolicy, autoInvestEnabled: !autoOn });
   };
 
   return (
     <div style={{ animation: "slideUp 0.28s ease both" }}>
 
-      {/* ── Status chips ── */}
-      <div style={{ display: "flex", gap: "7px", marginBottom: "22px" }}>
-        {STATUS_CHIPS.map((chip) => (
-          <div key={chip.label} style={{
-            flex: 1, background: "#1E2026", border: "1px solid var(--border)",
-            borderRadius: "9px", padding: "11px 8px", textAlign: "center",
-          }}>
-            <div style={{ fontSize: "9px", fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: "#474D57", marginBottom: "6px" }}>
-              {chip.label}
-            </div>
-            <div style={{ fontSize: "10.5px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "5px", color: chip.color }}>
-              <span style={{
-                width: "5px", height: "5px", borderRadius: "50%",
-                background: chip.color, display: "inline-block",
-                animation: chip.pulse ? "blink 2s ease-in-out infinite" : "none",
-              }} />
-              {chip.val}
-            </div>
-          </div>
-        ))}
-      </div>
-
       {/* ── Power button ── */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "14px", marginBottom: "22px" }}>
         <button
           onClick={toggleAutoInvest}
-          disabled={isBusy || isLoading}
+          disabled={!canToggle}
           aria-label="Toggle auto-trade"
           style={{
             width: "114px", height: "114px", borderRadius: "50%",
-            border: `2px solid ${autoOn ? "#F0B90B" : "var(--border)"}`,
-            background: autoOn ? "var(--yellow-dim)" : "#1E2026",
-            cursor: isBusy || isLoading ? "not-allowed" : "pointer",
+            border: "2px solid transparent",
+            background: autoOn
+              ? "linear-gradient(180deg, #EF5350, #D32F2F)"
+              : "linear-gradient(180deg, #66BB6A, #388E3C)",
+            cursor: !canToggle ? "not-allowed" : "pointer",
             position: "relative",
             display: "flex", alignItems: "center", justifyContent: "center",
             flexDirection: "column", gap: "5px",
             boxShadow: autoOn
-              ? "0 0 0 4px rgba(240,185,11,0.08), 0 0 32px rgba(240,185,11,0.22)"
-              : "none",
+              ? "0 0 0 4px rgba(239,83,80,0.3), 0 0 20px rgba(211,47,47,0.4)"
+              : "0 0 0 4px rgba(102,187,106,0.3), 0 0 20px rgba(56,142,60,0.4)",
             transition: "all 0.35s",
             outline: "none",
           }}
         >
-          <div style={{
-            position: "absolute", inset: "6px", borderRadius: "50%",
-            border: `1.5px solid ${autoOn ? "rgba(240,185,11,0.3)" : "var(--border)"}`,
-            transition: "border-color 0.35s",
-          }} />
           <span style={{
             fontSize: "26px", lineHeight: 1,
             filter: autoOn ? "drop-shadow(0 0 8px rgba(240,185,11,0.6))" : "none",
@@ -113,11 +126,25 @@ export function AutoTradeTab() {
             fontFamily: "var(--font-sora), sans-serif",
             transition: "color 0.3s",
           }}>
-            {isBusy ? "SAVING…" : autoOn ? "ENABLED" : "DISABLED"}
+            {isBusy
+              ? "SAVING…"
+              : isLoading
+                ? "LOADING…"
+                : autoOn
+                  ? "ENABLED"
+                  : cooldownActive
+                    ? "COOLDOWN"
+                    : "ENABLE"
+            }
           </span>
         </button>
-        <div style={{ fontSize: "10.5px", color: "#474D57", textAlign: "center", lineHeight: 1.6 }}>
-          {autoOn ? "AI is monitoring & executing trades" : "Tap to enable automatic trading"}
+        <div style={{ fontSize: "13px", color: "#FFFFFF", textAlign: "center", lineHeight: 1.6, fontWeight: 600 }}>
+          {cooldownActive && !autoOn
+            ? `Next enable in ${cooldownLabel}`
+            : autoOn
+              ? "AI is monitoring & executing trades"
+              : "Tap to enable automatic trading"
+          }
         </div>
       </div>
 
