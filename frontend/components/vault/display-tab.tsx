@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useVaultBalance } from "@/hooks/use-vault-balance";
 import { useVaultPolicy } from "@/hooks/use-vault-policy";
-import { useDeposit } from "@/hooks/use-deposit";
 import { fmt } from "@/lib/utils";
 import type { VaultPolicy } from "@/types";
 
@@ -14,8 +12,6 @@ const mono: React.CSSProperties = {
 export function DisplayTab() {
   const { data: balance, isLoading: balLoading } = useVaultBalance();
   const { data: policyRaw } = useVaultPolicy();
-  const { deposit, isPending, isConfirming, isSuccess } = useDeposit();
-  const [amount, setAmount] = useState("");
 
   const bal = balance as bigint | undefined;
   const pol = policyRaw as VaultPolicy | undefined;
@@ -60,49 +56,6 @@ export function DisplayTab() {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* ── Deposit ── */}
-      <div style={{ marginBottom: "14px" }}>
-        <div style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#474D57", marginBottom: "10px" }}>
-          Deposit USDC
-        </div>
-        <div style={{ display: "flex", gap: "8px" }}>
-          <div style={{ position: "relative", flex: 1 }}>
-            <input
-              type="number"
-              placeholder="100"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              style={{
-                width: "100%", background: "#1E2026",
-                border: "1.5px solid var(--border)", borderRadius: "8px",
-                padding: "10px 52px 10px 14px",
-                ...mono, fontSize: "14px", fontWeight: 500,
-                color: "#EAECEF", outline: "none",
-              }}
-            />
-            <span style={{
-              position: "absolute", right: "13px", top: "50%", transform: "translateY(-50%)",
-              fontSize: "10.5px", fontWeight: 700, color: "#474D57", pointerEvents: "none",
-            }}>USDC</span>
-          </div>
-          <button
-            onClick={() => deposit(amount)}
-            disabled={isPending || isConfirming}
-            style={{
-              padding: "10px 20px", background: "#F0B90B", color: "#0B0E11",
-              border: "none", borderRadius: "8px",
-              fontFamily: "var(--font-sora), sans-serif",
-              fontSize: "12px", fontWeight: 700,
-              cursor: isPending || isConfirming ? "not-allowed" : "pointer",
-              opacity: isPending || isConfirming ? 0.6 : 1,
-              transition: "opacity 0.15s",
-            }}
-          >
-            {isSuccess ? "Done ✓" : isPending || isConfirming ? "…" : "Deposit"}
-          </button>
-        </div>
       </div>
 
       {/* ── Activity ── */}
