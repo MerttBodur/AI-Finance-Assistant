@@ -1,3 +1,5 @@
+25/05/26-26/06/26 tarihleri arasında Bi-ThonGo WEB3 Hackathon kapsamında 32 saatte geliştirildi.
+
 # AI-Finance-Assistant
 
 AI destekli, policy kontrollu, otonom Web3 yatirim asistani.
