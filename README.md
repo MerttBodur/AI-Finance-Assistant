@@ -200,12 +200,14 @@ npm run build
 
 https://docs.google.com/presentation/d/1uZWcsGenG4Lw7gWF6Vr38K9O6RL5HnqV/edit?usp=sharing&ouid=112112600802115548358&rtpof=true&sd=true
 
-## Takim
+ ## App Demo
+
+ https://drive.google.com/file/d/16Tkum3yFaW7z91lPfvgUwIjZV3BVHd2P/view?usp=drivesdk
+
+ ## Takim
 
 - Mert Bodur
 - Sercan Bakmaz
 - Tarik Emre Ari
 
-## Lisans
 
-MIT
